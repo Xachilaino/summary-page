@@ -10,7 +10,10 @@ const endDate = ref('')
 const startTime = ref('00:00:00') // 預設 00:00:00
 const endTime = ref('00:00:00') // 預設 00:00:00
 const articles = ref([])
-const expandedRows = ref(new Set())
+
+// Drawer 狀態
+const drawerVisible = ref(false)
+const selectedRow = ref(null)
 
 // 組合成 LocalDateTime 格式
 const buildRange = () => {
@@ -31,8 +34,10 @@ const handleQuery = async () => {
   }
 
   const { data } = await queryArticles({ startTime: start, endTime: end })
+  console.log('📌 查詢 API Response:', data) // ✅ Debug 印出完整 JSON
+
   if (data.success) {
-    articles.value = data.articles // ✅ 保留原始 postTime
+    articles.value = data.articles
   } else {
     ElMessage.error(data.message)
     articles.value = []
@@ -47,6 +52,8 @@ const handleDelete = async () => {
   }
 
   const { data } = await deleteArticles({ startTime: start, endTime: end })
+  console.log('🗑️ 刪除 API Response:', data) // ✅ Debug 印出完整 JSON
+
   if (data.success) {
     ElMessage.success(`刪除了 ${data.deletedCount} 篇文章`)
     articles.value = []
@@ -55,12 +62,9 @@ const handleDelete = async () => {
   }
 }
 
-const toggleExpand = (id) => {
-  if (expandedRows.value.has(id)) {
-    expandedRows.value.delete(id)
-  } else {
-    expandedRows.value.add(id)
-  }
+const openDrawer = (row) => {
+  selectedRow.value = row
+  drawerVisible.value = true
 }
 </script>
 
@@ -98,10 +102,10 @@ const toggleExpand = (id) => {
 
       <!-- 查詢與刪除按鈕 -->
       <el-button type="primary" @click="handleQuery">
-        <el-icon><Filter /></el-icon>
+        <el-icon><Filter /></el-icon> 查詢
       </el-button>
       <el-button type="danger" @click="handleDelete">
-        <el-icon><Delete /></el-icon>
+        <el-icon><Delete /></el-icon> 刪除
       </el-button>
     </div>
 
@@ -117,29 +121,18 @@ const toggleExpand = (id) => {
       </el-table-column>
       <el-table-column prop="sentimentTag" label="情緒" width="80" />
 
-      <el-table-column label="操作" width="120">
+      <el-table-column label="詳情" width="120">
         <template #default="scope">
-          <el-button size="small" @click="toggleExpand(scope.row.id)">
+          <el-button size="small" @click="openDrawer(scope.row)">
             <el-icon><Document /></el-icon>
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- 展開的 JSON (原始格式) -->
-    <div
-      v-for="row in articles"
-      :key="row.id"
-      v-show="expandedRows.has(row.id)"
-      style="
-        margin: 10px 0;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        background: #f9f9f9;
-      "
-    >
-      <pre>{{ JSON.stringify(row, null, 2) }}</pre>
-    </div>
+    <!-- JSON 詳情 Drawer -->
+    <el-drawer v-model="drawerVisible" title="文章詳細資訊" size="40%">
+      <pre v-if="selectedRow">{{ JSON.stringify(selectedRow, null, 2) }}</pre>
+    </el-drawer>
   </div>
 </template>

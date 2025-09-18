@@ -1,5 +1,5 @@
 <template>
-  <el-container style="min-height:100vh">
+  <el-container style="min-height: 100vh">
     <!-- 導航列 -->
     <el-header>
       <el-menu
@@ -12,6 +12,7 @@
       >
         <el-menu-item index="/">首頁</el-menu-item>
         <el-menu-item index="/articles">文章管理</el-menu-item>
+        <el-menu-item index="/articles/summary">文章摘要</el-menu-item>
       </el-menu>
     </el-header>
 
