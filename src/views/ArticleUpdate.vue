@@ -29,11 +29,17 @@ const fields = [
 
 // 切換欄位時，清空輸入
 const handleFieldChange = () => {
-  newValue.value = ''
+  const field = fields.find((f) => f.value === selectedField.value)
+
+  if (field && field.type === 'number') {
+    newValue.value = null // ✅ 避免 el-input-number 報錯
+  } else {
+    newValue.value = ''
+  }
 }
 
 const handleUpdate = async () => {
-  if (!id.value || !selectedField.value || newValue.value === '') {
+  if (!id.value || !selectedField.value || newValue.value === '' || newValue.value === null) {
     ElMessage.warning('請輸入完整資訊')
     return
   }
